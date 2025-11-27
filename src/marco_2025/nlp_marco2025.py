@@ -29,7 +29,7 @@ def clasificador_marco2025():
     # ======================================================
     def nrm(s: str) -> str:
         s = "" if s is None else str(s)
-        s = s.lower().strip()
+        s = str(s).casefold().strip()
         s = unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode("ascii")
         s = re.sub(r"\s+", " ", s)
         return s
@@ -38,9 +38,8 @@ def clasificador_marco2025():
         if val is None or (isinstance(val, float) and math.isnan(val)):
             return []
         s = str(val)
-        s = re.sub(r"[;\n\r\t/]+", "|", s)
-        s = re.sub(r"[•\u2022]+", "|", s)
-        parts = re.split(r"\|+|,", s)
+        s = re.sub(r"[;\n\r\t/•\u2022]+", "|", s)
+        parts = re.split(r"[|,]+", s)
         return [nrm(p) for p in parts if p and p.strip()]
 
     # ======================================================
@@ -52,7 +51,7 @@ def clasificador_marco2025():
     COL_NOMBRE = "Nombre del indicador"
     COL_MARCO_CAT = "MARCO_CATEGORIA"
     COL_MARCO_SUB = "MARCO_SUBCATEGORIA"
-    COL_SECTOR = "Sector Elegible"
+    COL_SECTOR = "Sector_Elegible"
 
     seeds["seed_norm"] = seeds[COL_NOMBRE].map(nrm)
     seeds_norm_list = seeds["seed_norm"].tolist()
@@ -84,7 +83,7 @@ def clasificador_marco2025():
         if not q:
             return -1, 0.0
 
-        ratios = [SequenceMatcher(None, q, s).ratio() for s in seeds_norm_list]
+        ratios = [SequenceMatcher(None, q, s, autojunk=False).ratio() for s in seeds_norm_list]
         idx = int(np.argmax(ratios))
         best = ratios[idx]
 
@@ -202,17 +201,17 @@ def clasificador_marco2025():
         results.append(batch_res)
 
         # Guardado incremental
-        partial = pd.concat(
-            [big.iloc[:end_i].reset_index(drop=True),
-             pd.concat(results).reset_index(drop=True)],
-            axis=1
-        )
+#        partial = pd.concat(
+#            [big.iloc[:end_i].reset_index(drop=True),
+#             pd.concat(results).reset_index(drop=True)],
+#            axis=1
+#        )
 
-        partial_path = OUT_CSV.with_name(
-    OUT_CSV.stem + f"_partial_{end_i}.csv"
-)
+#        partial_path = OUT_CSV.with_name(
+#    OUT_CSV.stem + f"_partial_{end_i}.csv"
+#)
 
-        partial.to_csv(partial_path, index=False, encoding="utf-8-sig")
+#        partial.to_csv(partial_path, index=False, encoding="utf-8-sig")
 
     # ===== Archivo final =====
     final = pd.concat(
