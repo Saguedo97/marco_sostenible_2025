@@ -4,8 +4,13 @@ RUN PIPELINE — Ejecución completa con medidores por etapa
 ===============================================================
 """
 
-import os
-import sys
+import os, sys
+
+# Agregar carpeta src al PYTHONPATH automáticamente
+ROOT = os.path.dirname(os.path.abspath(__file__))
+SRC = os.path.join(ROOT, "src")
+if SRC not in sys.path:
+    sys.path.append(SRC)
 import time
 import subprocess
 from pathlib import Path
