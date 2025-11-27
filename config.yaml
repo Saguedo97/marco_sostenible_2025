@@ -1,0 +1,13 @@
+# CONFIG DEL PROYECTO
+
+paths:
+  bronze_dir: "data/bronze"
+  silver_dir: "data/silver"
+  seeds_file: "data/seeds/Semillas_Indicadores_Actualizados.xlsx"
+
+nlp:
+  use_embeddings: true
+  embedding_model: "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
+  fuzzy_min: 0.86
+  embedding_min_strong: 0.72
+  batch_size: 1000
