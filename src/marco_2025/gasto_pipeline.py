@@ -104,26 +104,6 @@ def build_devengado_2022_2025():
 def csv_to_parquet_by_year():
     print("📌 Celda 2 — Generando Parquets...")
 
-    # --- reader blindado ---
-    duckdb.sql("""
-        CREATE OR REPLACE MACRO safe_read(path) AS 
-            read_csv_auto(
-                path,
-                types={
-                    'SECTOR': 'VARCHAR',
-                    'DIVISION_FUNCIONAL': 'VARCHAR',
-                    'GRUPO_FUNCIONAL': 'VARCHAR',
-                    'PLIEGO': 'VARCHAR',
-                    'DEPARTAMENTO_EJECUTORA': 'VARCHAR',
-                    'PROVINCIA_EJECUTORA': 'VARCHAR',
-                    'DISTRITO_EJECUTORA': 'VARCHAR',
-                    'UBIGEO': 'VARCHAR'
-                },
-                sample_size=-1,
-                nullstr=''
-            );
-    """)
-
     SILVER_GASTO_TMP = SILVER_GASTO / "_tmp_parquet"
     SILVER_GASTO_TMP.mkdir(exist_ok=True)
 
@@ -137,12 +117,22 @@ def csv_to_parquet_by_year():
     for year, file in files.items():
         out = SILVER_GASTO_TMP / f"{year}.parquet"
         print(f"   ⏳ {year} → parquet...")
+
         duckdb.sql(f"""
-            COPY (SELECT * FROM safe_read('{file}'))
-            TO '{out}' (FORMAT PARQUET);
+            COPY (
+                SELECT *
+                FROM read_csv_auto(
+                    '{file}',
+                    ALL_VARCHAR=TRUE,
+                    HEADER=TRUE,
+                    SAMPLE_SIZE=-1,
+                    IGNORE_ERRORS=TRUE
+                )
+            ) TO '{out}' (FORMAT PARQUET);
         """)
 
     print("   ✅ Celda 2 completada.")
+
 
 # ================================================================
 # CELDA 3 — UNIFICAR PARQUETS
